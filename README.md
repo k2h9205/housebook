@@ -36,7 +36,7 @@
     1. 결제시스템이 과중되면 사용자를 잠시동안 받지 않고 결제를 잠시후에 하도록 유도한다. (Circuit breaker, fallback)
 1. 성능
     1. 고객이 대여 현황을 예약 시스템에서 항상 확인 할 수 있어야 한다. (CQRS)
-    1. 결제, 대여 정보가 변경 될 때 마다 숙소 재고가 변경될 수 있어야 한다. (Event driven)
+    1. 결제, 예약 정보가 변경 될 때 마다 숙소 재고가 변경될 수 있어야 한다. (Event driven)
 
 ---
 # 분석/설계
@@ -202,32 +202,32 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 ---
 #### 적용 후 REST API 의 테스트   
 
-##### A) 차량등록   
-차량1 : http http://localhost:8085/carManagements carNo=car01 rentalAmt=10000 carRegDt=20200701 procStatus=WAITING   
+##### A) 숙소등록   
+숙소1 : http http://localhost:8089/houses id=1 status=WAITING houseName=신라호텔 price=200000   
 ![](images/차량등록_car01.png)   
    
-차량2 : http http://localhost:8085/carManagements carNo=car02 rentalAmt=20000 carRegDt=20200702 procStatus=WAITING   
+숙소2 : http http://localhost:8089/houses id=2 status=WAITING houseName=SK펜션 price=500000   
 ![](images/차량등록_car02.png)   
    
 ##### B) 예약   
-예약1 : http http://localhost:8082/carReservations resrvNo=res20200801Seq0001 resrvDt=20200801 carNo=car01 rentalDt=20200806 returnDt=20200807 rentalAmt=50000 procStatus=RESERVED   
+예약1 : http http://localhost:8087/books id=1 status=BOOKED houseId=1 bookDate=20201016 housePrice=200000  
 ![](images/차량예약_car01.png)   
    
-예약2 : http http://localhost:8082/carReservations resrvNo=res20200803Seq0001 resrvDt=20200803 carNo=car02 rentalDt=20200803 returnDt=20200805 rentalAmt=20000 procStatus=RESERVED   
+예약2 : http http://localhost:8087/books id=2 status=BOOKED houseId=2 bookDate=20201016 housePrice=500000 
 ![](images/차량예약_car02.png)   
    
-예약2 취소 : http http://localhost:8082/carReservations id=2 resrvNo=res20200803Seq0001 resrvCncleDt=20200803 procStatus=RESERVATION_CANCELED   
+예약2 취소 : http http://localhost:8087/books id=2 status=BOOK_CANCELLED houseId=2 bookCancelDate=20201016 
 ![](images/차량예약취소_car02.png)   
    
 ##### C) 결제   
-결제1 : http http://localhost:8083/payments id=1 resrvNo=res20200801Seq0001 paymtNo=pay20200801Seq0001 paymtDt=20200801  paymtAmt=50000 procStatus=PAID carNo=car01 rentalDt=20200806 returnDt=20200807 rentalAmt=50000   
+결제1 : 3. http http://localhost:8088/payments id=1 status=PAID bookId=1 paymentDate=20201016 housePrice=200000 houseId=1
 ![](images/결제_car01.png)   
    
-결제취소1 : http http://localhost:8083/payments id=1 resrvNo=res20200801Seq0001 paymtNo=pay20200801Seq0001 paymtCncleDt=20200803 paymtAmt=50000 procStatus=PAYMENT_CANCELED carNo=car01   
+결제취소1 : 3. http http://localhost:8088/payments id=1 status=PAYMENT_CANCELLED bookId=1 paymentCancelDate=20201016 houseId=1  
 ![](images/결제취소_car01.png)   
    
 ##### D) 마이페이지   
-http http://localhost:8084/myPages   
+http http://localhost:8086/myPages   
 ![](images/마이페이지_예약취소,결제취소후_003.png)  
    
 
