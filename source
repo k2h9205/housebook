@@ -1,0 +1,5 @@
+        String timestamp;
+        SimpleDateFormat defaultSimpleDateFormat = new SimpleDateFormat("YYYYMMdd");
+        timestamp = defaultSimpleDateFormat.format(new Date());
+
+        payment.setPaymentDate(timestamp);
