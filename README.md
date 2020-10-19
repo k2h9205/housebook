@@ -27,7 +27,7 @@
     1. 결제가 되지 않은 예약건은 숙소 대여가 성립하지 않는다. (Sync 호출)
 2. 장애격리
     1. 관리자 숙소관리 기능이 수행되지 않더라도 예약은 항상 받을 수 있어야 한다. (Async:Event-driven, Eventual Consistency)
-    2. 결제시스템이 과중되면 사용자를 잠시동안 받지 않고 결제를 잠시후에 하도록 유도한다. (Circuit breaker, fallback)
+    2. 결제시스템이 과중되면 사용자를 잠시동안 받지 않고 결제를 잠시후에 하도록 유도한다. (Circuit breaker)
 3. 성능
     1. 고객이 대여 현황을 예약 시스템에서 항상 확인 할 수 있어야 한다. (CQRS)
     2. 결제, 예약 정보가 변경 될 때 마다 숙소 재고가 변경될 수 있어야 한다. (Event driven)
@@ -140,31 +140,25 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 <img width="451" alt="숙소취소" src="https://user-images.githubusercontent.com/54618778/96413687-f5fd2f80-1226-11eb-87fd-2f8c7ea695c5.png">
 
 
-6. 숙소 예약 취소된 상태
-``` http localhost:8084/mypages/2 ```
-
-<img width="555" alt="숙소예약취소된상태" src="https://user-images.githubusercontent.com/54618778/96413685-f5649900-1226-11eb-81f3-325d67e03b22.png">
-
-
-7. 예약 보기
+6. 예약 보기
 ```http localhost:8081/books ```
 
 <img width="573" alt="예약상태보기" src="https://user-images.githubusercontent.com/54618778/96413688-f695c600-1226-11eb-9659-11ba9322f19d.png">
 
 
-8. 숙소 보기 
+7. 숙소 보기 
 ``` http localhost:8083/houses ```
 
 <img width="591" alt="숙소상태보기" src="https://user-images.githubusercontent.com/54618778/96413674-f3023f00-1226-11eb-830e-d6ab51cb745b.png">
 
 
-9. 숙소 예약된 상태 (MyPage)
+8. 숙소 예약된 상태 (MyPage)
 ``` http localhost:8084/mypages/7 ```
 
 <img width="569" alt="숙소예약된상태" src="https://user-images.githubusercontent.com/54618778/96413683-f5649900-1226-11eb-8ec6-a384afb76ead.png">
 
 
-10. 숙소 예약취소된 상태 (MyPage)
+9. 숙소 예약취소된 상태 (MyPage)
 ``` http localhost:8084/mypages/2 ```
 
 <img width="545" alt="MyPage_예약취소" src="https://user-images.githubusercontent.com/54618778/96413690-f72e5c80-1226-11eb-9a1e-72df208097fc.png">
