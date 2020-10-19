@@ -207,26 +207,25 @@ http http://localhost:8083/houses id=1 status=WAITING houseName=신라호텔 hou
 ![1](https://user-images.githubusercontent.com/54618778/96391675-8c642d80-11f4-11eb-9563-b6f1b21a1022.png)
 2. 숙소2 등록
 http http://localhost:8083/houses id=2 status=WAITING houseName=SK펜션 housePrice=500000
-
+![2](https://user-images.githubusercontent.com/54618778/96391753-d5b47d00-11f4-11eb-9ac3-3c0aa9f9ed3e.png)
 3. 등록된 숙소 조회
 http localhost:8083/houses
-
+![3](https://user-images.githubusercontent.com/54618778/96391761-d9480400-11f4-11eb-8726-3d67c7cb1872.png)
 4. 숙소1 예약
 http http://localhost:8081/books id=1 status=BOOKED houseId=1 bookDate=20201016 housePrice=200000
-
+![4](https://user-images.githubusercontent.com/54618778/96391759-d8af6d80-11f4-11eb-8ff2-542ae691ffe2.png)
 5. 숙소2 예약
 http POST http://localhost:8081/books id=2 status=BOOKED houseId=2 bookDate=20201017 housePrice=500000
-
+![5](https://user-images.githubusercontent.com/54618778/96391757-d816d700-11f4-11eb-9ebd-1ff4edfbcdcf.png)
 6. 숙소2 예약취소
 http http://localhost:8081/books id=2 status=BOOK_CANCELLED houseId=2 bookCancelDate=20201017 housePrice=500000
-
+![6](https://user-images.githubusercontent.com/54618778/96391762-d9e09a80-11f4-11eb-9b84-e0858fe5c47b.png)
 7. 숙소1 결제완료
 http http://localhost:8082/payments id=1 status=PAID bookId=1 houseId=1 paymentDate=20201016 housePrice=200000
-
+![7](https://user-images.githubusercontent.com/54618778/96391763-da793100-11f4-11eb-877b-468873cceb8c.png)
 8. myPage 확인
 http localhost:8084/mypages
-
-   
+![8](https://user-images.githubusercontent.com/54618778/96391764-da793100-11f4-11eb-94bd-29496b999f1e.png)
 
 
 ---
