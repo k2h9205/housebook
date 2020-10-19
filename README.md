@@ -212,6 +212,7 @@ http http://localhost:8083/houses id=2 status=WAITING houseName=SK펜션 housePr
 
 3. 등록된 숙소 조회
 http localhost:8083/houses
+
 ![3](https://user-images.githubusercontent.com/54618778/96391761-d9480400-11f4-11eb-8726-3d67c7cb1872.png)
 
 4. 숙소1 예약
@@ -232,6 +233,7 @@ http http://localhost:8082/payments id=1 status=PAID bookId=1 houseId=1 paymentD
 
 8. myPage 확인
 http localhost:8084/mypages
+
 ![8](https://user-images.githubusercontent.com/54618778/96391764-da793100-11f4-11eb-94bd-29496b999f1e.png)
 
 
