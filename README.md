@@ -8,7 +8,7 @@
     - [DDD 의 적용](#ddd-의-적용)
     - [폴리글랏 퍼시스턴스](#폴리글랏-퍼시스턴스)
     - [폴리글랏 프로그래밍](#폴리글랏-프로그래밍)
-    - [동기식 호출 과 Fallback 처리](#동기식-호출)
+    - [동기식 호출](#동기식-호출)
     - [비동기식 호출 과 Eventual Consistency](#비동기식-호출-과-Eventual-Consistency)
   
 ---
@@ -129,13 +129,13 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 
 4. 숙소2 예약
-``` http POST http://localhost:8081/books id=2 status=BOOKED houseId=2 bookDate=20201017 housePrice=500000 ```
+``` http POST http://localhost:8081/books id=2 status=BOOKED houseId=2 bookDate=20201016 housePrice=500000 ```
 
 <img width="450" alt="숙소예약2" src="https://user-images.githubusercontent.com/54618778/96413681-f4cc0280-1226-11eb-8f6c-f3d0e03c0456.png">
 
 
 5. 숙소2 예약 취소
-``` http http://localhost:8081/books id=2 status=BOOK_CANCELLED houseId=2 bookCancelDate=20201017 housePrice=500000 ```
+``` http http://localhost:8081/books id=2 status=BOOK_CANCELED houseId=2 ```
 
 <img width="451" alt="숙소취소" src="https://user-images.githubusercontent.com/54618778/96413687-f5fd2f80-1226-11eb-87fd-2f8c7ea695c5.png">
 
@@ -159,7 +159,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 
 9. 숙소 예약취소된 상태 (MyPage)
-``` http localhost:8084/mypages/2 ```
+``` http localhost:8084/mypages/9 ```
 
 <img width="545" alt="MyPage_예약취소" src="https://user-images.githubusercontent.com/54618778/96413690-f72e5c80-1226-11eb-9a1e-72df208097fc.png">
 
