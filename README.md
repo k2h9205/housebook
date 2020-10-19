@@ -111,13 +111,13 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 #### 적용 후 REST API 의 테스트
 
 1. 숙소1 등록
-``` http http://localhost:8083/houses id=1 status=WAITING houseName=신라호텔 housePrice=200000 ```
+``` http POST http://localhost:8083/houses id=1 status=WAITING houseName=신라호텔 housePrice=200000 ```
 
 <img width="457" alt="숙소등록1" src="https://user-images.githubusercontent.com/54618778/96413666-f0074e80-1226-11eb-88ca-1278f0077fc9.png">
 
 
 2. 숙소2 등록
-``` http http://localhost:8083/houses id=2 status=WAITING houseName=SK펜션 housePrice=500000 ```
+``` http POST http://localhost:8083/houses id=2 status=WAITING houseName=SK펜션 housePrice=500000 ```
 
 <img width="463" alt="숙소등록2" src="https://user-images.githubusercontent.com/54618778/96413673-f269a880-1226-11eb-9b1e-62ad3f98cd30.png">
 
@@ -135,31 +135,31 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 
 5. 숙소2 예약 취소
-``` http http://localhost:8081/books id=2 status=BOOK_CANCELED houseId=2 ```
+``` http PUT http://localhost:8081/books id=2 status=BOOK_CANCELED houseId=2 ```
 
 <img width="451" alt="숙소취소" src="https://user-images.githubusercontent.com/54618778/96413687-f5fd2f80-1226-11eb-87fd-2f8c7ea695c5.png">
 
 
 6. 예약 보기
-```http localhost:8081/books ```
+```http GET localhost:8081/books ```
 
 <img width="573" alt="예약상태보기" src="https://user-images.githubusercontent.com/54618778/96413688-f695c600-1226-11eb-9659-11ba9322f19d.png">
 
 
 7. 숙소 보기 
-``` http localhost:8083/houses ```
+``` http GET localhost:8083/houses ```
 
 <img width="591" alt="숙소상태보기" src="https://user-images.githubusercontent.com/54618778/96413674-f3023f00-1226-11eb-830e-d6ab51cb745b.png">
 
 
 8. 숙소 예약된 상태 (MyPage)
-``` http localhost:8084/mypages/7 ```
+``` http GET localhost:8084/mypages/7 ```
 
 <img width="569" alt="숙소예약된상태" src="https://user-images.githubusercontent.com/54618778/96413683-f5649900-1226-11eb-8ec6-a384afb76ead.png">
 
 
 9. 숙소 예약취소된 상태 (MyPage)
-``` http localhost:8084/mypages/9 ```
+``` http GET localhost:8084/mypages/9 ```
 
 <img width="545" alt="MyPage_예약취소" src="https://user-images.githubusercontent.com/54618778/96413690-f72e5c80-1226-11eb-9a1e-72df208097fc.png">
 
