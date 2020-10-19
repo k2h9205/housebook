@@ -25,12 +25,12 @@
 ## 비기능적 요구사항
 1. 트랜잭션
     1. 결제가 되지 않은 예약건은 숙소 대여가 성립하지 않는다. (Sync 호출)
-1. 장애격리
+2. 장애격리
     1. 관리자 숙소관리 기능이 수행되지 않더라도 예약은 항상 받을 수 있어야 한다. (Async:Event-driven, Eventual Consistency)
-    1. 결제시스템이 과중되면 사용자를 잠시동안 받지 않고 결제를 잠시후에 하도록 유도한다. (Circuit breaker, fallback)
-1. 성능
+    2. 결제시스템이 과중되면 사용자를 잠시동안 받지 않고 결제를 잠시후에 하도록 유도한다. (Circuit breaker, fallback)
+3. 성능
     1. 고객이 대여 현황을 예약 시스템에서 항상 확인 할 수 있어야 한다. (CQRS)
-    1. 결제, 예약 정보가 변경 될 때 마다 숙소 재고가 변경될 수 있어야 한다. (Event driven)
+    2. 결제, 예약 정보가 변경 될 때 마다 숙소 재고가 변경될 수 있어야 한다. (Event driven)
 
 ---
 # 구현
@@ -120,69 +120,44 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 <img width="463" alt="숙소등록2" src="https://user-images.githubusercontent.com/54618778/96413673-f269a880-1226-11eb-9b1e-62ad3f98cd30.png">
 
 
-3. 숙소 보기
-
-<img width="591" alt="숙소상태보기" src="https://user-images.githubusercontent.com/54618778/96413674-f3023f00-1226-11eb-830e-d6ab51cb745b.png">
-
-
-4. 숙소1 예약 
+3. 숙소1 예약 
 
 <img width="448" alt="숙소예약1" src="https://user-images.githubusercontent.com/54618778/96413678-f4336c00-1226-11eb-8665-1ed312adbed1.png">
 
 
-5. 숙소2 예약
+4. 숙소2 예약
 
 <img width="450" alt="숙소예약2" src="https://user-images.githubusercontent.com/54618778/96413681-f4cc0280-1226-11eb-8f6c-f3d0e03c0456.png">
 
 
-6. 숙소 예약된 상태
-
-<img width="569" alt="숙소예약된상태" src="https://user-images.githubusercontent.com/54618778/96413683-f5649900-1226-11eb-8ec6-a384afb76ead.png">
-
-
-7. 숙소2 예약 취소
+5. 숙소2 예약 취소
 
 <img width="451" alt="숙소취소" src="https://user-images.githubusercontent.com/54618778/96413687-f5fd2f80-1226-11eb-87fd-2f8c7ea695c5.png">
 
-8. 숙소 예약 취소된 상태
+
+6. 숙소 예약 취소된 상태
 
 <img width="555" alt="숙소예약취소된상태" src="https://user-images.githubusercontent.com/54618778/96413685-f5649900-1226-11eb-81f3-325d67e03b22.png">
 
 
-9. 예약 상태 
+7. 예약 보기
 
 <img width="573" alt="예약상태보기" src="https://user-images.githubusercontent.com/54618778/96413688-f695c600-1226-11eb-9659-11ba9322f19d.png">
 
 
-10. MyPage 확인
+8. 숙소 보기 
+
+<img width="591" alt="숙소상태보기" src="https://user-images.githubusercontent.com/54618778/96413674-f3023f00-1226-11eb-830e-d6ab51cb745b.png">
+
+
+9. 숙소 예약된 상태 (MyPage)
+
+<img width="569" alt="숙소예약된상태" src="https://user-images.githubusercontent.com/54618778/96413683-f5649900-1226-11eb-8ec6-a384afb76ead.png">
+
+
+10. 숙소 예약취소된 상태 (MyPage)
 
 <img width="545" alt="MyPage_예약취소" src="https://user-images.githubusercontent.com/54618778/96413690-f72e5c80-1226-11eb-9a1e-72df208097fc.png">
-
-
-
-1. 숙소1 등록
-http http://localhost:8083/houses id=1 status=WAITING houseName=신라호텔 housePrice=200000
-
-2. 숙소2 등록
-http http://localhost:8083/houses id=2 status=WAITING houseName=SK펜션 housePrice=500000
-
-3. 등록된 숙소 조회
-http localhost:8083/houses
-
-4. 숙소1 예약
-http http://localhost:8081/books id=1 status=BOOKED houseId=1 bookDate=20201016 housePrice=200000
-
-5. 숙소2 예약
-http POST http://localhost:8081/books id=2 status=BOOKED houseId=2 bookDate=20201017 housePrice=500000
-
-6. 숙소2 예약취소
-http http://localhost:8081/books id=2 status=BOOK_CANCELLED houseId=2 bookCancelDate=20201017 housePrice=500000
-
-7. 숙소1 결제완료
-http http://localhost:8082/payments id=1 status=PAID bookId=1 houseId=1 paymentDate=20201016 housePrice=200000
-
-8. myPage 확인
-http localhost:8084/mypages
 
 
 ---
@@ -203,22 +178,36 @@ spring:
 
 
 
+<dependency>
+
+<groupId>org.hsqldb</groupId>
+
+<artifactId>hsqldb</artifactId>
+
+<version>2.4.0</version>
+
+<scope>runtime</scope>
+
+</dependency>
+
+
+
 ---
-## 동기식 호출 과 Fallback 처리
-Reservation → Payment 간 호출은 동기식 일관성 유지하는 트랜잭션으로 처리.     
+## 동기식 호출
+Book → Payment 간 호출은 동기식 일관성 유지하는 트랜잭션으로 처리.     
 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출.     
 
 ```
-ReservationApplication.java.
+BookApplication.java.
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableBinding(KafkaProcessor.class)
 @EnableFeignClients
-public class ReservationApplication {
+public class BookApplication {
     protected static ApplicationContext applicationContext;
     public static void main(String[] args) {
-        applicationContext = SpringApplication.run(ReservationApplication.class, args);
+        applicationContext = SpringApplication.run(BookApplication.class, args);
     }
 }
 ```
@@ -232,27 +221,25 @@ Feign 방식은 넷플릭스에서 만든 Http Client로 Http call을 할 때, �
 
 - 예약 받은 직후(@PostPersist) 결제 요청함
 ```
--- CarReservation.java
+-- Book.java
     @PostPersist
     public void onPostPersist(){
-        CarReserved carReserved = new CarReserved();
-        BeanUtils.copyProperties(this, carReserved);
-        carReserved.publishAfterCommit();
+        Booked booked = new Booked();
+        BeanUtils.copyProperties(this, booked);
+        booked.publishAfterCommit();
 
         //Following code causes dependency to external APIs
         // it is NOT A GOOD PRACTICE. instead, Event-Policy mapping is recommended.
 
-        carrental.external.Payment payment = new carrental.external.Payment();
+        housebook.external.Payment payment = new housebook.external.Payment();
         // mappings goes here
-        payment.setId(carReserved.getId());
-        payment.setResrvNo(carReserved.getResrvNo());
+        
+        payment.setBookId(booked.getId());
+        payment.setHouseId(booked.getHouseId());
         ...// 중략 //...
-        payment.setReturnDt(carReserved.getReturnDt());
 
-        System.out.println("##### listener carReservationCanceled.getResrvNo [RESERVED] : " + carReserved.getResrvNo());
-
-        ReservationApplication.applicationContext.getBean(carrental.external.PaymentService.class)
-            .payment(payment);
+        BookApplication.applicationContext.getBean(housebook.external.PaymentService.class)
+            .paymentRequest(payment);
 
     }
 ```
@@ -261,11 +248,11 @@ Feign 방식은 넷플릭스에서 만든 Http Client로 Http call을 할 때, �
 
 - 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 주문도 못받는다는 것을 확인함.   
 ```
-carReservation -- (http request/response) --> Payment
+Book -- (http request/response) --> Payment
 
 # Payment 서비스 종료
 
-# carReservation 등록
+# Book 등록
 http http://localhost:8082/carReservations carNo=car01 custNo=cus01 paymtNo=pay20200801Seq0001 procStatus=RESERVED rentalAmt=10000 resrvNo=res20200801Seq0001 resrvDt=20200801 rentalDt=20200802 returnDt=20200805     #Fail!!!!
 ```
 Payment를 종료한 시점에서 상기 Reservation 등록 Script 실행 시, 500 Error 발생.
