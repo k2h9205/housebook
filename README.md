@@ -202,33 +202,30 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 ---
 #### 적용 후 REST API 의 테스트   
 
-##### A) 숙소등록   
-숙소1 : http http://localhost:8089/houses id=1 status=WAITING houseName=신라호텔 price=200000   
-![](images/차량등록_car01.png)   
-   
-숙소2 : http http://localhost:8089/houses id=2 status=WAITING houseName=SK펜션 price=500000   
-![](images/차량등록_car02.png)   
-   
-##### B) 예약   
-예약1 : http http://localhost:8087/books id=1 status=BOOKED houseId=1 bookDate=20201016 housePrice=200000  
-![](images/차량예약_car01.png)   
-   
-예약2 : http http://localhost:8087/books id=2 status=BOOKED houseId=2 bookDate=20201016 housePrice=500000 
-![](images/차량예약_car02.png)   
-   
-예약2 취소 : http http://localhost:8087/books id=2 status=BOOK_CANCELLED houseId=2 bookCancelDate=20201016 
-![](images/차량예약취소_car02.png)   
-   
-##### C) 결제   
-결제1 : 3. http http://localhost:8088/payments id=1 status=PAID bookId=1 paymentDate=20201016 housePrice=200000 houseId=1
-![](images/결제_car01.png)   
-   
-결제취소1 : 3. http http://localhost:8088/payments id=1 status=PAYMENT_CANCELLED bookId=1 paymentCancelDate=20201016 houseId=1  
-![](images/결제취소_car01.png)   
-   
-##### D) 마이페이지   
-http http://localhost:8086/myPages   
-![](images/마이페이지_예약취소,결제취소후_003.png)  
+1. 숙소1 등록
+http http://localhost:8083/houses id=1 status=WAITING houseName=신라호텔 housePrice=200000
+
+2. 숙소2 등록
+http http://localhost:8083/houses id=2 status=WAITING houseName=SK펜션 housePrice=500000
+
+3. 등록된 숙소 조회
+http localhost:8083/houses
+
+4. 숙소1 예약
+http http://localhost:8081/books id=1 status=BOOKED houseId=1 bookDate=20201016 housePrice=200000
+
+5. 숙소2 예약
+http POST http://localhost:8081/books id=2 status=BOOKED houseId=2 bookDate=20201017 housePrice=500000
+
+6. 숙소2 예약취소
+http http://localhost:8081/books id=2 status=BOOK_CANCELLED houseId=2 bookCancelDate=20201017 housePrice=500000
+
+7. 숙소1 결제완료
+http http://localhost:8082/payments id=1 status=PAID bookId=1 houseId=1 paymentDate=20201016 housePrice=200000
+
+8. myPage 확인
+http localhost:8084/mypages
+
    
 
 
