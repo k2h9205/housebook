@@ -204,7 +204,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 1. 숙소1 등록
 http http://localhost:8083/houses id=1 status=WAITING houseName=신라호텔 housePrice=200000
-
+![1](https://user-images.githubusercontent.com/54618778/96391675-8c642d80-11f4-11eb-9563-b6f1b21a1022.png)
 2. 숙소2 등록
 http http://localhost:8083/houses id=2 status=WAITING houseName=SK펜션 housePrice=500000
 
