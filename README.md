@@ -4,18 +4,12 @@
 
 - [과제 - 숙소예약 서비스](#---)
   - [서비스 시나리오](#서비스-시나리오)
-  - [분석/설계](#분석설계)
   - [구현:](#구현-)
     - [DDD 의 적용](#ddd-의-적용)
     - [폴리글랏 퍼시스턴스](#폴리글랏-퍼시스턴스)
     - [폴리글랏 프로그래밍](#폴리글랏-프로그래밍)
-    - [동기식 호출 과 Fallback 처리](#동기식-호출-과-Fallback-처리)
+    - [동기식 호출 과 Fallback 처리](#동기식-호출)
     - [비동기식 호출 과 Eventual Consistency](#비동기식-호출-과-Eventual-Consistency)
-  - [운영](#운영)
-    - [CI/CD 설정](#cicd설정)
-    - [동기식 호출 / 서킷 브레이킹 / 장애격리](#동기식-호출-서킷-브레이킹-장애격리)
-    - [오토스케일 아웃](#오토스케일-아웃)
-    - [무정지 재배포](#무정지-재배포)
   
 ---
 # 서비스 시나리오
@@ -37,88 +31,6 @@
 1. 성능
     1. 고객이 대여 현황을 예약 시스템에서 항상 확인 할 수 있어야 한다. (CQRS)
     1. 결제, 예약 정보가 변경 될 때 마다 숙소 재고가 변경될 수 있어야 한다. (Event driven)
-
----
-# 분석/설계
-
-## Event Storming 결과
-* MSAEz 로 모델링한 이벤트스토밍 결과:  http://www.msaez.io/#/storming/AGOswYDNMOT81Zunvsugh5SeVo53/share/1217efbb6be75f4b106e4e549d4ff19c/-MJaSqO_VR5oIoyT5crT
-
-### 이벤트 도출
-![image](https://lh4.googleusercontent.com/tKoqblyQq9-QlG0OBciZ4BXh59p59lMsx-Jbs907Xr9J_tpr4bvcTHxinFFf6TpPWG2utG85tsxDWAkOmxCxG9-rwc6D4UhhvuA0Jck1N5Nv71fRPoWMD4dpHLClkmy6lHPc1oeb)
-
-### 어그리게잇으로 묶기
-![image](https://lh6.googleusercontent.com/8ZV500Uxo0pRZxt7VY0xZr0shoECh6_5tFelREC_9X4ypLL4T2GpIdlItgXr3XHciv1lehkyCYHKUTZfMzH8vQv4p3IPUnzkRHiEpjds806-CvBXq_h1tQUJQpR8HsjybRHLHNAa)
-  - 차량 예약, 결제, 대여, 차량관리 등은 그와 연결된 command 와 event 들에 의하여 트랜잭션이 유지되어야 하는 단위로 그들 끼리 묶어주었다.
-
-
-### 바운디드 컨텍스트로 묶기
-
-![image](https://lh5.googleusercontent.com/wVaXQ9KZlWgjqOQ4dcGuqyAA-yfzEgE5XT-9OuMViNr4C1Vg4L_JGDKTdlNEFKEQeAg4rGZWRoWcgBsl4o4YFUrqJlWIxqrKbBKhnOfk0Slt4c85joaj7UILsatnKAe7ymHzFiq5)
-
-  - 도메인 서열 분리 
-      - Core Domain: reservation, rental 은 핵심 코어 서비스로 연간 Up-time SLA 수준을 99.999% 목표, 배포주기는 reservation 의 경우 1주일 1회 미만, rental 의 경우 1개월 1회 미만
-      - Supporting Domain: management 은 차량 관리 관련 경쟁력을 내기 위한 서비스이며, SLA 수준은 연간 60% 이상 uptime 목표, 배포 주기는 각 팀의 자율이나 표준 스프린트 주기가 1주일 이므로 1주일 1회 이상을 기준으로 함.
-      - General Domain: payment 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 (핑크색으로 이후 전환할 예정)
-
-### 폴리시 부착 (괄호는 수행주체, 폴리시 부착을 둘째단계에서 해놔도 상관 없음. 전체 연계가 초기에 드러남)
-
-![image](https://lh6.googleusercontent.com/MHw86hOJW9mDVSa7m7W42jZVPRzKoDWAEvqkGFpjfOeSDOiuCXAITGKZMDA7ZmCffUjj0R6pzqr5edzRCCcqZpCRDWgCfLayZ4caHy2bd0Haybwb3BdsnQplHgqVsAAy8os8uQT_)
-
-### 폴리시의 이동과 컨텍스트 매핑 (점선은 Pub/Sub, 실선은 Req/Resp)
-
-![image](https://lh4.googleusercontent.com/lQYX03iEk9i1wyKOMwP2cOWH_BkgIQQxK_h1AhTMuqP_s9T_mI0sEZbKa2iC94FYWKg9O4g5oHrHA_hXJeb_Xvzyfj2Ysidy3SuAaUdEYrBQbqJkF1kFoRYFvkO6cv09Khi6tJYF)
-
-### 완성된 1차 모형
-
-![image](https://lh3.googleusercontent.com/i0XBM9IcrXyjE16f9j0IhEETrsxZCF2AnNvsUJeBq79TpY8eYSQDwVs1I7DhtuLw-jtGmBSqnhFiJanSyadFqQ4iDFtqx2yGPpHtA0W6BZ7cx09-3s5DjC52MKat_ZDLKRa5jz1g)
-
-### 1차 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
-
-![image](https://lh5.googleusercontent.com/VRDwND8JzXYwltI3FRphn2BVQU0rCCb1mGCpp-vdHaIJSZWSwPraQnGa2MuCJcyARnr_kiiGvpb97IeTIEFTWAnm7Dw3RI2L5Q_lHnEeDKHPA8pqVE8DhzY22U2V6QsVAwp5fS9x)
-
-  - 고객이 차량을 선택해 예약한다. (OK)
-  - 고객이 예약한 차량을 결제한다. (OK)
-  - 결제가 성공하면 차량이 대여 된다. (OK)
-  - 대여된 차량은 차량 관리(인벤토리)에 차량상태 변경(대여중) 처리 된다. (OK)
-
-![image](https://lh5.googleusercontent.com/vKOVC6ra2Ch_gKHFq3BwlwrD2VpOBOKm2hq85heqLGOIojDtvkazJWB_VwGOHMkB4GaTYt2v7lcX4PRxr4UwmXkH6hx4yACyCKadEPQ523HgH1H-KLr_7qs7tsCiCtTHSloJUmZH)
-
-  - 고객이 예약한 렌트 차량을 취소할 수 있다. (OK)
-  - 고객이 예약 취소가 되면 차량 대여 취소된다. (OK)
-  - 고객은 차량 정보를 조회할 수 있다. (?) 
-  - 고객은 대여 진행 현황을 중간에 확인할 수 있다. (?)
-
-
-### 모델 수정
-
-![image](https://lh4.googleusercontent.com/mrEoqRNGCbd034MK1k8Uy1blJAT9Sw6UiG02BwCy1bfpa6YhdWv-gruwwolSn9l7hZ7W1aUU-6ke4razrZTyUO6g0wjkiG9Bx1pWna1ynGSG9Nk4IvpF7gLrD8EsErP-W0cvatj_)
-    
-- 수정된 모델은 모든 요구사항을 커버함.
-
-
-### 비기능 요구사항에 대한 검증
-
-![image](https://lh3.googleusercontent.com/PV2RtlqdTL89Wal8kIE8AXhhLt71EDOHDc_yvSZ4XTgeBxhU0cxL_I_FARrfTvvEuJ7EI3ap-rFN_hrVjkc5U0Dm6dE8_ZmNhtaNvy55CAZ2E7-vhH8ipXDKCUK2LDE9c26ylbWU)
-
-  - 마이크로 서비스를 넘나드는 시나리오에 대한 트랜잭션 처리
-    - 차량 예약과 동시에 결제 처리 : 결제가 완료되지 않은 차량 대여는 불가, ACID 트랜잭션 적용, 예약 완료시 결제 처리에 대해서 Req-Res 방식 처리.   
-    - 결제 완료 시 대여 및 차량관리의 상태 변경 : rental에서 마이크로 서비스가 별도의 배포주기를 가지기 때문에 Eventual Consistency 방식으로 트랜잭션 처리함.   
-    - 나머지 모든 inter-microservice 트랜잭션: rental 및 management 이벤트에 대해, 데이터 일관성의 시점이 크리티컬하지 않은 모든 경우가 대부분이라 판단, Eventual Consistency 를 기본으로 채택함.
-    
-    
-    
----
-## 헥사고날 아키텍처 다이어그램 도출
-    
-![image](https://lh4.googleusercontent.com/fOS-lSfMqTzHT5h-KVTjDa5am7162EaWOtILX8Rkry1--ZsniD3KeRQRhvAT45sxlXpF8Q9pcw4ASCSWhmPd6HPjykpLxEUqeZcuY1pfhvD3oz7vBV0mS5_2c_oLRdqDXSCyD1Z2)
-
-- Chris Richardson, MSA Patterns 참고하여 Inbound adaptor와 Outbound adaptor를 구분함
-- 호출관계에서 Pub/Sub 과 Req/Res 를 구분함
-- 서브 도메인과 바운디드 컨텍스트의 분리: 각 팀의 KPI 별로 아래와 같이 관심 구현 스토리를 나눠가짐
-
-
-
 
 ---
 # 구현
@@ -196,41 +108,81 @@ import org.springframework.data.repository.PagingAndSortingRepository;
    
    
 ---
-#### 적용 후 REST API 의 테스트   
+#### 적용 후 REST API 의 테스트
+
+1. 숙소1 등록
+
+<img width="457" alt="숙소등록1" src="https://user-images.githubusercontent.com/54618778/96413666-f0074e80-1226-11eb-88ca-1278f0077fc9.png">
+
+
+2. 숙소2 등록
+
+<img width="463" alt="숙소등록2" src="https://user-images.githubusercontent.com/54618778/96413673-f269a880-1226-11eb-9b1e-62ad3f98cd30.png">
+
+
+3. 숙소 보기
+
+<img width="591" alt="숙소상태보기" src="https://user-images.githubusercontent.com/54618778/96413674-f3023f00-1226-11eb-830e-d6ab51cb745b.png">
+
+
+4. 숙소1 예약 
+
+<img width="448" alt="숙소예약1" src="https://user-images.githubusercontent.com/54618778/96413678-f4336c00-1226-11eb-8665-1ed312adbed1.png">
+
+
+5. 숙소2 예약
+
+<img width="450" alt="숙소예약2" src="https://user-images.githubusercontent.com/54618778/96413681-f4cc0280-1226-11eb-8f6c-f3d0e03c0456.png">
+
+
+6. 숙소 예약된 상태
+
+<img width="569" alt="숙소예약된상태" src="https://user-images.githubusercontent.com/54618778/96413683-f5649900-1226-11eb-8ec6-a384afb76ead.png">
+
+
+7. 숙소2 예약 취소
+
+<img width="451" alt="숙소취소" src="https://user-images.githubusercontent.com/54618778/96413687-f5fd2f80-1226-11eb-87fd-2f8c7ea695c5.png">
+
+8. 숙소 예약 취소된 상태
+
+<img width="555" alt="숙소예약취소된상태" src="https://user-images.githubusercontent.com/54618778/96413685-f5649900-1226-11eb-81f3-325d67e03b22.png">
+
+
+9. 예약 상태 
+
+<img width="573" alt="예약상태보기" src="https://user-images.githubusercontent.com/54618778/96413688-f695c600-1226-11eb-9659-11ba9322f19d.png">
+
+
+10. MyPage 확인
+
+<img width="545" alt="MyPage_예약취소" src="https://user-images.githubusercontent.com/54618778/96413690-f72e5c80-1226-11eb-9a1e-72df208097fc.png">
+
+
 
 1. 숙소1 등록
 http http://localhost:8083/houses id=1 status=WAITING houseName=신라호텔 housePrice=200000
-![1](https://user-images.githubusercontent.com/54618778/96391675-8c642d80-11f4-11eb-9563-b6f1b21a1022.png)
 
 2. 숙소2 등록
 http http://localhost:8083/houses id=2 status=WAITING houseName=SK펜션 housePrice=500000
-![2](https://user-images.githubusercontent.com/54618778/96391753-d5b47d00-11f4-11eb-9ac3-3c0aa9f9ed3e.png)
 
 3. 등록된 숙소 조회
 http localhost:8083/houses
 
-![3](https://user-images.githubusercontent.com/54618778/96391761-d9480400-11f4-11eb-8726-3d67c7cb1872.png)
-
 4. 숙소1 예약
 http http://localhost:8081/books id=1 status=BOOKED houseId=1 bookDate=20201016 housePrice=200000
-![4](https://user-images.githubusercontent.com/54618778/96391759-d8af6d80-11f4-11eb-8ff2-542ae691ffe2.png)
 
 5. 숙소2 예약
 http POST http://localhost:8081/books id=2 status=BOOKED houseId=2 bookDate=20201017 housePrice=500000
-![5](https://user-images.githubusercontent.com/54618778/96391757-d816d700-11f4-11eb-9ebd-1ff4edfbcdcf.png)
 
 6. 숙소2 예약취소
 http http://localhost:8081/books id=2 status=BOOK_CANCELLED houseId=2 bookCancelDate=20201017 housePrice=500000
-![6](https://user-images.githubusercontent.com/54618778/96391762-d9e09a80-11f4-11eb-9b84-e0858fe5c47b.png)
 
 7. 숙소1 결제완료
 http http://localhost:8082/payments id=1 status=PAID bookId=1 houseId=1 paymentDate=20201016 housePrice=200000
-![7](https://user-images.githubusercontent.com/54618778/96391763-da793100-11f4-11eb-877b-468873cceb8c.png)
 
 8. myPage 확인
 http localhost:8084/mypages
-
-![8](https://user-images.githubusercontent.com/54618778/96391764-da793100-11f4-11eb-94bd-29496b999f1e.png)
 
 
 ---
