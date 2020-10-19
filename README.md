@@ -128,21 +128,17 @@
 cd gateway
 mvn spring-boot:run  
 
-cd reservation
+cd book
 mvn spring-boot:run 
 
 cd payment
 mvn spring-boot:run  
 
-cd rental
+cd house
 mvn spring-boot:run
 
-cd management
+cd mypage
 mvn spring-boot:run  
-
-cd view
-mvn spring-boot:run  
-
 
 ```
 
@@ -151,7 +147,7 @@ mvn spring-boot:run
 ## DDD 의 적용
 - 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언
 ```
-package carrental;
+package housebook;
 
 import org.springframework.beans.BeanUtils;
 
@@ -164,9 +160,9 @@ public class Payment {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
-    private String paymtNo;
+    private Long houseId;
     .../... 중략  .../...
-    private Long rentalAmt;
+    private Double housePrice;
 
     public Long getId() {
         return id;
@@ -175,11 +171,11 @@ public class Payment {
         this.id = id;
     }
     
-    public String getPaymtNo() {
-        return paymtNo;
+    public Long gethouseId() {
+        return houseId;
     }
-    public void setPaymtNo(String paymtNo) {
-        this.paymtNo = paymtNo;
+    public void sethouseId(Long houseId) {
+        this.houseId = houseId;
     }
     .../... 중략  .../...
 
@@ -191,7 +187,7 @@ public class Payment {
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록    
 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용
 ```
-package carrental;
+package housebook;
 import org.springframework.data.repository.PagingAndSortingRepository;
     public interface PaymentRepository extends PagingAndSortingRepository<Payment, Long>{
 
