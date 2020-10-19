@@ -111,51 +111,61 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 #### 적용 후 REST API 의 테스트
 
 1. 숙소1 등록
+``` http http://localhost:8083/houses id=1 status=WAITING houseName=신라호텔 housePrice=200000 ```
 
 <img width="457" alt="숙소등록1" src="https://user-images.githubusercontent.com/54618778/96413666-f0074e80-1226-11eb-88ca-1278f0077fc9.png">
 
 
 2. 숙소2 등록
+``` http http://localhost:8083/houses id=2 status=WAITING houseName=SK펜션 housePrice=500000 ```
 
 <img width="463" alt="숙소등록2" src="https://user-images.githubusercontent.com/54618778/96413673-f269a880-1226-11eb-9b1e-62ad3f98cd30.png">
 
 
 3. 숙소1 예약 
+``` http POST http://localhost:8081/books id=1 status=BOOKED houseId=1 bookDate=20201016 housePrice=200000 ```
 
 <img width="448" alt="숙소예약1" src="https://user-images.githubusercontent.com/54618778/96413678-f4336c00-1226-11eb-8665-1ed312adbed1.png">
 
 
 4. 숙소2 예약
+``` http POST http://localhost:8081/books id=2 status=BOOKED houseId=2 bookDate=20201017 housePrice=500000 ```
 
 <img width="450" alt="숙소예약2" src="https://user-images.githubusercontent.com/54618778/96413681-f4cc0280-1226-11eb-8f6c-f3d0e03c0456.png">
 
 
 5. 숙소2 예약 취소
+``` http http://localhost:8081/books id=2 status=BOOK_CANCELLED houseId=2 bookCancelDate=20201017 housePrice=500000 ```
 
 <img width="451" alt="숙소취소" src="https://user-images.githubusercontent.com/54618778/96413687-f5fd2f80-1226-11eb-87fd-2f8c7ea695c5.png">
 
 
 6. 숙소 예약 취소된 상태
+``` http localhost:8084/mypages/2 ```
 
 <img width="555" alt="숙소예약취소된상태" src="https://user-images.githubusercontent.com/54618778/96413685-f5649900-1226-11eb-81f3-325d67e03b22.png">
 
 
 7. 예약 보기
+```http localhost:8081/books ```
 
 <img width="573" alt="예약상태보기" src="https://user-images.githubusercontent.com/54618778/96413688-f695c600-1226-11eb-9659-11ba9322f19d.png">
 
 
 8. 숙소 보기 
+``` http localhost:8083/houses ```
 
 <img width="591" alt="숙소상태보기" src="https://user-images.githubusercontent.com/54618778/96413674-f3023f00-1226-11eb-830e-d6ab51cb745b.png">
 
 
 9. 숙소 예약된 상태 (MyPage)
+``` http localhost:8084/mypages/7 ```
 
 <img width="569" alt="숙소예약된상태" src="https://user-images.githubusercontent.com/54618778/96413683-f5649900-1226-11eb-8ec6-a384afb76ead.png">
 
 
 10. 숙소 예약취소된 상태 (MyPage)
+``` http localhost:8084/mypages/2 ```
 
 <img width="545" alt="MyPage_예약취소" src="https://user-images.githubusercontent.com/54618778/96413690-f72e5c80-1226-11eb-9a1e-72df208097fc.png">
 
@@ -163,21 +173,10 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 ---
 ## 폴리글랏 퍼시스턴스
 모두 H2 메모리DB를 적용하였다.  
-다양한 데이터소스 유형 (RDB or NoSQL) 적용 시 데이터 객체에 @Entity 가 아닌 @Document로 마킹 후, 기존의 Entity Pattern / Repository Pattern 적용과 데이터베이스 제품의 설정 (application.yml) 만으로 가능하다.
+다양한 데이터소스 유형 (RDB or NoSQL) 적용 시 데이터 객체에 @Entity 가 아닌 @Document로 마킹 후, 기존의 Entity Pattern / Repository Pattern 적용과 데이터베이스 제품의 설정 (pom.xml) 만으로 가능하다.
 
 ```
---application.yml // mariaDB 추가 예시
-spring:
-  profiles: real-db
-  datasource:
-        url: jdbc:mariadb://rds주소:포트명(기본은 3306)/database명
-        username: db계정
-        password: db계정 비밀번호
-        driver-class-name: org.mariadb.jdbc.Driver
-```
-
-
-
+--pom.xml // hsqldb 추가 예시
 <dependency>
 
 <groupId>org.hsqldb</groupId>
@@ -189,8 +188,7 @@ spring:
 <scope>runtime</scope>
 
 </dependency>
-
-
+```
 
 ---
 ## 동기식 호출
@@ -253,378 +251,67 @@ Book -- (http request/response) --> Payment
 # Payment 서비스 종료
 
 # Book 등록
-http http://localhost:8082/carReservations carNo=car01 custNo=cus01 paymtNo=pay20200801Seq0001 procStatus=RESERVED rentalAmt=10000 resrvNo=res20200801Seq0001 resrvDt=20200801 rentalDt=20200802 returnDt=20200805     #Fail!!!!
+http http://localhost:8081/books id=1 status=BOOKED houseId=1 bookDate=20201016 housePrice=200000    #Fail!!!!
 ```
-Payment를 종료한 시점에서 상기 Reservation 등록 Script 실행 시, 500 Error 발생.
+Payment를 종료한 시점에서 상기 Book 등록 Script 실행 시, 500 Error 발생.
 ("Could not commit JPA transaction; nested exception is javax.persistence.RollbackException: Error while committing the transaction")   
 ![](images/결제서비스_중지_시_예약시도.png)   
-
-
 
 
 ---
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
 
-Payment가 이루어진 후에(PAID) Rental시스템으로 이를 알려주는 행위는 동기식이 아니라 비 동기식으로 처리.   
-Rental 시스템의 처리를 위하여 결제주문이 블로킹 되지 않아도록 처리.   
+Payment가 이루어진 후에(PAID) House시스템으로 이를 알려주는 행위는 동기식이 아니라 비 동기식으로 처리.   
+House 시스템의 처리를 위하여 결제주문이 블로킹 되지 않아도록 처리.   
 이를 위하여 결제이력에 기록을 남긴 후에 곧바로 결제승인이 되었다는 도메인 이벤트를 카프카로 송출한다(Publish).   
 
-- Rental 서비스에서는 PAID 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:   
+- House 서비스에서는 PAID 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:   
 ```
 @Service
 public class PolicyHandler{
 
     @Autowired
-    CarRentalRepository carRentalRepository;
-
+    HouseRepository houseRepository;
+    
     @StreamListener(KafkaProcessor.INPUT)
     public void onStringEventListener(@Payload String eventString){
 
     }
 
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverPaid_CarRental(@Payload Paid paid){
+    public void wheneverPaid_Rent(@Payload Paid paid){
+        if(paid.isMe()){
+            System.out.println("##### listener Rent : " + paid.toJson());
 
-        if(paid.isMe() && "PAID".equals(paid.getProcStatus())){
+            Optional<House> optional = houseRepository.findById(paid.getHouseId());
+            House house = optional.get();
+            house.setBookId(paid.getBookId());
+            house.setStatus("RENTED");
 
-            CarRental carRental = new CarRental();
-            carRental.setId(paid.getId());
-            carRental.setResrvNo(paid.getResrvNo());
-            carRental.setPaymtNo(paid.getPaymtNo());
-            carRental.setCarNo(paid.getCarNo());
-            carRental.setRentalDt(paid.getRentalDt());
-            carRental.setReturnDt(paid.getRentalDt());
-            carRental.setProcStatus(paid.getProcStatus());
-
-            carRentalRepository.save(carRental);
-
-            System.out.println("##### listener CarRental [PAID] : " + paid.toJson());
+            houseRepository.save(house);
         }
     }
 ```
 
-- Rental 시스템은 주문/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, Rental 시스템이 유지보수로 인해 잠시 내려간 상태라도 주문을 받는데 문제가 없다:
+- House 시스템은 주문/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, House 시스템이 유지보수로 인해 잠시 내려간 상태라도 주문을 받는데 문제가 없다:
 ```
-# Rental Service 를 잠시 내려놓음 (ctrl+c)
+# House Service 를 잠시 내려놓음 (ctrl+c)
 
 #PAID 처리
-http http://localhost:8083/payments id=1 paymtAmt=10000 paymtDt=20200801 paymtNo=pay20200801Seq0001 procStatus=PAID resrvNo=res20200801Seq0001 #Success!!
+http http://localhost:8082/payments id=1 status=PAID bookId=1 houseId=1 paymentDate=20201016 housePrice=200000 #Success!!
 
 #결제상태 확인
-http http://localhost:8083/payments  #제대로 Data 들어옴   
+http http://localhost:8082/payments  #제대로 Data 들어옴   
 
-#Rental 서비스 기동
-cd Rental
+#House 서비스 기동
+cd house
 mvn spring-boot:run
 
-#Rental 상태 확인
-http http://localhost:8081/carRentals     # 제대로 kafka로 부터 data 수신 함을 확인
+#House 상태 확인
+http http://localhost:8083/houses     # 제대로 kafka로 부터 data 수신 함을 확인
 ```
-
-
-
-
-
-
-
-
-
-
 
 
 ---
-# 운영
-## CI/CD 설정
-### 빌드/배포
-각 프로젝트 jar를 Dockerfile을 통해 Docker Image 만들어 ECR저장소에 올린다.   
-EKS 클러스터에 접속한 뒤, 각 서비스의 deployment.yaml, service.yaml을 kuectl명령어로 서비스를 배포한다.   
-  - 코드 형상관리 : https://github.com/l2skcc 하위 repository에 각각 구성   
-  - 운영 플랫폼 : AWS의 EKS(Elastic Kubernetes Service)   
-  - Docker Image 저장소 : AWS의 ECR(Elastic Container Registry)
-##### 배포 명령어
-```
-$ kubectl apply -f deployment.yaml
-$ kubectl apply -f svc.yaml
-```
 
-##### 배포 결과
-```
-$ kubectl get all
-NAME                               READY   STATUS    RESTARTS   AGE
-pod/gateway-849986759f-qdp7w       2/2     Running   0          21h
-pod/httpie                         2/2     Running   2          21h
-pod/management-d48c488c7-tcv7b     2/2     Running   0          17h
-pod/management-d48c488c7-wcj2p     2/2     Running   0          17h
-pod/payment-55c5884758-h2nv9       2/2     Running   0          21h
-pod/rental-567bd69584-wm9jw        2/2     Running   0          4h19m
-pod/reservation-559fd5d9f8-tmbnq   2/2     Running   0          21h
-pod/view-6484f74b85-swlgm          2/2     Running   0          21h
-
-NAME                  TYPE           CLUSTER-IP      EXTERNAL-IP                                                                    PORT(S)          AGE
-service/gateway       LoadBalancer   10.100.51.99    a69f85cf88d5143c38768f321c7043aa-1329116461.ap-northeast-2.elb.amazonaws.com   8080:31699/TCP   23h
-service/kubernetes    ClusterIP      10.100.0.1      <none>                                                                         443/TCP          24h
-service/management    ClusterIP      10.100.60.100   <none>                                                                         8080/TCP         23h
-service/payment       ClusterIP      10.100.142.82   <none>                                                                         8080/TCP         23h
-service/rental        ClusterIP      10.100.81.85    <none>                                                                         8080/TCP         23h
-service/reservation   ClusterIP      10.100.4.223    <none>                                                                         8080/TCP         23h
-service/view          ClusterIP      10.100.71.102   <none>                                                                         8080/TCP         23h
-
-NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/gateway       1/1     1            1           21h
-deployment.apps/management    2/2     2            2           17h
-deployment.apps/payment       1/1     1            1           21h
-deployment.apps/rental        1/1     1            1           21h
-deployment.apps/reservation   1/1     1            1           21h
-deployment.apps/view          1/1     1            1           21h
-```
-
-
-# Liveness
-pod의 container가 정상적으로 기동되는지 확인하여, 비정상 상태인 경우 pod를 재기동하도록 한다.   
-
-아래의 값으로 liveness를 설정한다.
-- 재기동 제어값 : /tmp/healthy 파일의 존재를 확인
-- 기동 대기 시간 : 3초
-- 재기동 횟수 : 5번까지 재시도
-
-이때, 재기동 제어값인 /tmp/healthy파일을 강제로 지워 liveness가 pod를 비정상 상태라고 판단하도록 하였다.       
-5번 재시도 후에도 파드가 뜨지 않았을 경우 CrashLoopBackOff 상태가 됨을 확인하였다.   
-##### payment에 Liveness 적용한 내용
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-...
-    spec:
-      containers:
-        - name: payment
-          image: 496278789073.dkr.ecr.ap-northeast-2.amazonaws.com/ecr-skcc-team2-payment:v1
-          args:
-          - /bin/sh
-          - -c
-          - touch /tmp/healthy; sleep 10; rm -rf /tmp/healthy; sleep 600;
-...
-          livenessProbe:                 #적용 부분
-            exec:
-              command:
-              - cat
-              - /tmp/healthy
-            initialDelaySeconds: 3
-            timeoutSeconds: 2
-            periodSeconds: 5
-            failureThreshold: 5
-```
-#### 테스트 결과 
-![](images/liveness.PNG)
-
----
-# 서킷 브레이커
-ISTIO, httpie 설치하여 테스트 환경을 만든다.  
-각 마이크로 서비스의 deployment에 istio가 적용되어, istio컨테이너가 pod마다 sidecar로 기동 된것을 확인하였다.   
-
-##### 서킷 브레이커 DestinationRule 생성
-management 서비스에 대해 서킷 브레이커를 적용하였다.   
-최대 1개의 http 연결만 받아들이고, 10초마다 확인하여(interval) 5개의 500에러가 발생하면(consecutiveErrors) 30초 동안 연결을 거부(baseEjectionTime)하도록 설정하였다.   
-```
-$ kubectl apply -f - <<EOF
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: management
-spec:
-  host: management
-  trafficPolicy:
-    connectionPool:
-      tcp:
-        maxConnections: 1
-      http:
-        http1MaxPendingRequests: 1    # 최대 1개의 http 연결만
-        maxRequestsPerConnection: 1
-    outlierDetection:
-      consecutiveErrors: 5     # 5개의 500에러가 발생
-      interval: 10s            # 10초마다 확인
-      baseEjectionTime: 30s    # 30초 동안 연결을 거부
-      maxEjectionPercent: 100
-EOF
-```
-##### httpie에서 management 서비스로 부하를 주었다.
-```
-siege -c20 -t30S  -v --content-type "application/json" 'http://gateway:8080/carManagements POST {"carNo":"test", "rentalAmt":"10000", "procStatus":"WAITING", "carRegDt":"20200701"}'
-```
-
-#### 서킷 브레이커 적용 시 결과 
-아래와 같이 management 서비스에서 일부의 요청만 받아드리고, 허용치를 넘어서는 요청에서 대해서는 500을 응답주는것을 확인하였다.
-![](images/sb-ok.PNG)
-
-
-#### 서킷 브레이커 DestinationRule 삭제 
-management에 적용된 서킷 브레이커 DestinationRule을 삭제하고 다시 부하를 주어 결과를 확인한다.    
-```
-$ kubectl delete dr --all
-```
-아래와 같이 management서비스에서 모든 요청을 처리하여 200응답을 주는것을 확인하였다.
-![](images/sb-no.PNG)
-
----
-## RETRY
-#### retry 리소스 생성
-Retry테스트를 위하여 VirtualService 리소스를 생성하고 부하테스트를 하였으나, 예상한 결과값을 보지 못하였다.    
-retries 설정값과 reservation pod의 수가 맞지 않는지, 모든 요청에 대하여 500응답을 주었다.
-```
-$ kubectl apply -f - <<EOF
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: reservation
-spec:
-  hosts:
-  - reservation
-  http:
-  - route:
-    - destination:
-        host: reservation
-    retries:
-      attempts: 3
-      perTryTimeout: 2s
-EOF
-```
-#### 적용 상태에서 요청
-```
-$ siege -c5 -t30S  -v --content-type "application/json" 'http://gateway:8080/carReservations POST {"carNo":"car01", "custNo":"cus01", "paymtNo":"pay20200801Seq0001", "procStatus":"RESERVED", "rentalAmt":"10000", "resrvNo":"res20200801Seq0001", "resrvDt":"20200801", "rentalDt":"20200802", "returnDt":"20200805"}'
-** SIEGE 3.0.8
-** Preparing 5 concurrent users for battle.
-The server is now under siege...
-HTTP/1.1 500   0.04 secs:     257 bytes ==> POST http://gateway:8080/carReservations POST {"carNo":"car01", "custNo":"cus01", "paymtNo":"pay20200801Seq0001", "procStatus":"RESERVED", "rentalAmt":"10000", "resrvNo":"res20200801Seq0001", "resrvDt":"20200801", "rentalDt":"20200802", "returnDt":"20200805"}
-HTTP/1.1 500   0.04 secs:     257 bytes ==> POST http://gateway:8080/carReservations POST {"carNo":"car01", "custNo":"cus01", "paymtNo":"pay20200801Seq0001", "procStatus":"RESERVED", "rentalAmt":"10000", "resrvNo":"res20200801Seq0001", "resrvDt":"20200801", "rentalDt":"20200802", "returnDt":"20200805"}
-HTTP/1.1 500   0.04 secs:     257 bytes ==> POST http://gateway:8080/carReservations POST {"carNo":"car01", "custNo":"cus01", "paymtNo":"pay20200801Seq0001", "procStatus":"RESERVED", "rentalAmt":"10000", "resrvNo":"res20200801Seq0001", "resrvDt":"20200801", "rentalDt":"20200802", "returnDt":"20200805"}
-HTTP/1.1 500   0.04 secs:     257 bytes ==> POST http://gateway:8080/carReservations POST {"carNo":"car01", "custNo":"cus01", "paymtNo":"pay20200801Seq0001", "procStatus":"RESERVED", "rentalAmt":"10000", "resrvNo":"res20200801Seq0001", "resrvDt":"20200801", "rentalDt":"20200802", "returnDt":"20200805"}
-HTTP/1.1 500   0.02 secs:     257 bytes ==> POST http://gateway:8080/carReservations POST {"carNo":"car01", "custNo":"cus01", "paymtNo":"pay20200801Seq0001", "procStatus":"RESERVED", "rentalAmt":"10000", "resrvNo":"res20200801Seq0001", "resrvDt":"20200801", "rentalDt":"20200802", "returnDt":"20200805"}
-.........
-```
-
----
-# HPA
-management 서비스에 대하여 오토스케일러를 적용하여 확장적 운영이 가능하게 하였다. (실제로는 reservation 서비스에 적용하면 좋을것 같다.)   
-테스트에 앞서, pod의 cpu 사용량을 오토스케일러에서 확인 할 수 있도록 metrics-server를 설치하였다.     
-
-### autoscale 리소스 생성
-management pod를 최소 2개로 유지하며, 평균 cpu 사용량를 20%를 유지하는 선에서 최대 pod개수를 10개까지 자동으로 늘린다.
-```
-kubectl autoscale deploy management --min=2 --max=10 --cpu-percent=20
-```
-
-### deployment 수정
-management-deployment.yaml의 containers하위에 아래와 같이 container의 cpu limits과 requests를 설정한다.
-```
-containers:
-   resources:
-      limits: 
-        cpu: 500m
-      requests:
-        cpu: 200m
-```
-
-### 부하 테스트 진행
-```
-# siege -r 2000 -c 200 -v http://gateway:8080/carManagements
-```
-httpie에서 management로 부하테스트를 진행하였다.    
-- 부하가 들어갈수록 hpa에서 management의 cpu 사용량이 20%를 넘어 197%까지 순간적으로 늘어남을 확인 할 수 있다.
-- 이에 따라 management의 replica 수가 2개에서 10개까지 증가한다.
-- 10개까지 늘어단 management pod가 요청을 나누어 처리하면서 cpu사용량이 28%까지 줄어들었다.
-![](images/hpa-2.png)
-
-```
-kubectl delete hpa management
-```
-
----
-# configmap
-rental 서비스의 경우, 국가와 지역에 따라 설정이 변할 수도 있음을 가정할 수 있다.   
-configmap에 설정된 국가와 지역 설정을 rental 서비스에서 받아 사용 할 수 있도록 한다.   
-   
-아래와 같이 configmap을 생성한다.   
-data 필드에 보면 contury와 region정보가 설정 되어있다. 
-##### configmap 생성
-```
-$ kubectl apply -f - <<EOF
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: rental-region
-data:
-  contury: "korea"
-  region: "seoul"
-EOF
-```
-   
-rental deployment를 위에서 생성한 rental-region(cm)의 값을 사용 할 수 있도록 수정한다.
-###### configmap내용을 deployment에 적용 
-``` yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: rental
-  labels:
-    app: rental
-...
-    spec:
-      containers:
-        - name: rental
-          env:                                                 ##### 컨테이너에서 사용할 환경 변수 설정
-            - name: CONTURY
-              valueFrom:
-                configMapKeyRef:
-                  name: rental-region
-                  key: contury
-            - name: REGION
-              valueFrom:
-                configMapKeyRef:
-                  name: rental-region
-                  key: region
-          volumeMounts:                                                 ##### CM볼륨을 바인딩
-          - name: config
-            mountPath: "/config"
-            readOnly: true
-...
-      volumes:                                                 ##### CM 볼륨 
-      - name: config
-        configMap:
-          name: rental-region
-```
-rental pod에 cm에서 환경변수를 가져오겠다는 설정이 적용 된 것을 확인 할 수 있다.
-![](images/cm-1.PNG)
-
-실제 rental pod안에서 cm에 설정된 국가와 지역 설정이 환경변수로 적용 된것을 확인 할 수 있다.
-![](images/cm-2.PNG)
-
-
----
-# 무중단 배포
-서비스 중인 view의 docker image의 버전를 v3 -> v1로 변경한다.   
-이때, view:v1이 정상적으로 무중단 배포 되는지를 확인하였다.
-
-##### 부하 진행중
-view 서비스에 조회하는 명령어를 300s동안 계속 던지고 있는다.
-![](images/부하진행중.PNG)
-
-##### view 이미지의 version 변경
-부하가 진행 되는 중에, view의 버전을 1으로 변경한다.
-```
-$ kubectl set image deploy view view=496278789073.dkr.ecr.ap-northeast-2.amazonaws.com/ecr-skcc-team2-veiw:v1
--
- deployment.extensions/view image updated
-```
-
-##### 무중단 배포 진행 
-view-v1의 pod가 새로 배포가 완료되어 서비스 정상 상태가 된 후, 기존의 view-v3 pod가 중단 됨이 확인되었다.   
-이렇게 진행되는 경우, 새로운 pod가 완전히 기동 된 후 기존 pod가 중단 되므로 view 서비스 중단이 발생하지 않는다.
-![](images/무중단배포.PNG)
-
-이렇게 무중단 배포가 진행되는동안에 요청에 대한 응답도 계속 200으로 정상 결과를 반환한다.
-![](images/무중단-결과.PNG) 
-
-
-# 무중단 배포 실패
-deployment에서 liveness, readness를 제거하여 서비스 중단이 발생하여 Availability:18.17%의 가용성이 낮음을 확인한다.
-![](images/중단-결과.PNG) 
 
