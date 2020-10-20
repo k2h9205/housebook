@@ -249,7 +249,9 @@ http http://localhost:8081/books id=1 status=BOOKED houseId=1 bookDate=20201016 
 ```
 Payment를 종료한 시점에서 상기 Book 등록 Script 실행 시, 500 Error 발생.
 ("Could not commit JPA transaction; nested exception is javax.persistence.RollbackException: Error while committing the transaction")   
-![](images/결제서비스_중지_시_예약시도.png)   
+
+![스크린샷 2020-10-20 오전 11 12 22](https://user-images.githubusercontent.com/54618778/96531693-2e534b00-12c5-11eb-9e4b-3519a88037c8.png)
+
 
 
 ---
